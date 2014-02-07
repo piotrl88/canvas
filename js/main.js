@@ -1,15 +1,15 @@
 
 $(document).ready(function() {
     var gameCanvas = document.createElement('canvas');
-    gameCanvas.width = 500;
-    gameCanvas.height = 500;
+    gameCanvas.width = window.innerWidth;
+    gameCanvas.height = window.innerHeight;
     document.body.appendChild(gameCanvas);
 
     var ctx = gameCanvas.getContext('2d');
     var fps = 60,
-        lastTime = 0;
-
-    var allSquares = [];
+        lastTime = 0,
+        allSquares = [],
+        visibleSquares = [];
 
 
     animationLoop();
@@ -17,19 +17,22 @@ $(document).ready(function() {
         requestAnimationFrame(animationLoop);
         if(time - lastTime >= 1000/fps) {
 
-            allSquares.push({
-                x : gameCanvas.width/ 2,
-                y : gameCanvas.height/2,
-                h : rand(10, 50),
-                r : rand(0, 240),
-                g : rand(0, 240),
-                b : rand(0, 240),
-                speedX : rand(-1000, 1000)/100,
-                speedY : rand(-1000, 1000)/100
-            });
 
-            if(allSquares[allSquares.length-1].speedX==0 && allSquares[allSquares.length-1].speedY==0) {
-                allSquares[allSquares.length-1].speedX = rand(-1000, 1000)/100;
+            for(var i=0; i<15; i++) {
+                allSquares.push({
+                    x : gameCanvas.width/ 2,
+                    y : gameCanvas.height/2,
+                    h : rand(2, 5),
+                    r : rand(100, 240),
+                    g : rand(100, 240),
+                    b : rand(100, 240),
+                    speedX : rand(-1000, 1000)/100,
+                    speedY : rand(-1000, 1000)/100
+                });
+
+                if(allSquares[allSquares.length-1].speedX==0 && allSquares[allSquares.length-1].speedY==0) {
+                    allSquares[allSquares.length-1].speedX = rand(-1000, 1000)/100;
+                }
             }
 
             lastTime = time;
@@ -37,12 +40,29 @@ $(document).ready(function() {
             ctx.fillStyle = 'rgba(255,255,255, 0.2)';
             ctx.fillRect(0,0, gameCanvas.width, gameCanvas.height);
 
+            visibleSquares.length = 0;
+
             for(var i=0; i<allSquares.length; i++) {
-                ctx.fillStyle = 'rgb('+allSquares[i].r+','+allSquares[i].g+','+allSquares[i].b+')';
-                allSquares[i].x = allSquares[i].x + allSquares[i].speedX;
-                allSquares[i].y = allSquares[i].y + allSquares[i].speedY;
-                ctx.fillRect(allSquares[i].x-allSquares[i].h/2, allSquares[i].y-allSquares[i].h/2, allSquares[i].h, allSquares[i].h);
+                var square = allSquares[i];
+                ctx.fillStyle = 'rgb('+square.r+','+square.g+','+square.b+')';
+
+                square.x = square.x + square.speedX;
+                square.y = square.y + square.speedY;
+
+                /*square.speedY += 0.1;
+                square.r = Math.min(255, square.r+2);
+                square.g = Math.min(255, square.g+2);
+                square.b = Math.min(255, square.b+2);*/
+
+                ctx.fillRect(square.x-square.h/2, square.y-square.h/2, square.h, square.h);
+
+                if(square.x + square.h/2 > 0 && square.x - square.h/2 < gameCanvas.width
+                    && square.y + square.h/2 > 0 && square.y + square.h/2 < gameCanvas.height
+                    && (square.r != 255 || square.g !=255 || square.b !=255)) {
+                    visibleSquares.push(square);
+                }
             }
+            allSquares = visibleSquares.concat();
 
         }
     }
