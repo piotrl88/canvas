@@ -8,8 +8,32 @@ $(document).ready(function() {
     var ctx = gameCanvas.getContext('2d');
     var fps = 60,
         lastTime = 0,
+        ease = 'easeInOutQuart',
+        t = 0,
+        d = 1000,
+        forward = true;
         allSquares = [],
         visibleSquares = [];
+
+    //squareAnimationLoop();
+    function squareAnimationLoop(time) {
+        requestAnimationFrame(squareAnimationLoop);
+        if(time-lastTime >= 1000/fps) {
+            lastTime = time;
+
+            ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+            ctx.fillRect(x,y, h, h);
+
+            //x = (forward)? x+15 : x-15;
+            x = Easing.get('easeInOutQuad', (forward ? gameCanvas.width*0.1 : gameCanvas.width*0.9-h),  (!forward ? gameCanvas.width*0.1 : gameCanvas.width*0.9-h), t, d);
+            t += 1000/fps;
+
+            if(t>=d){
+                forward = !forward;
+                t = 0;
+            }
+        }
+    }
 
 
     animationLoop();
@@ -17,22 +41,27 @@ $(document).ready(function() {
         requestAnimationFrame(animationLoop);
         if(time - lastTime >= 1000/fps) {
 
-
-            for(var i=0; i<15; i++) {
+            for(var i=0; i<25; i++) {
                 allSquares.push({
-                    x : gameCanvas.width/ 2,
-                    y : gameCanvas.height/2,
+                    start_x : gameCanvas.width/2,
+                    start_y : gameCanvas.height/2,
+                    target_r : Math.round(gameCanvas.height*0.4),
+                    start_a : rand(0, 360),
+                    /*target_x : rand(0, Math.round(gameCanvas.width)),
+                    target_y : rand(0, Math.round(gameCanvas.height)),*/
+                    t : 0,
+                    duration : 1000,
                     h : rand(2, 5),
-                    r : rand(100, 240),
-                    g : rand(100, 240),
-                    b : rand(100, 240),
-                    speedX : rand(-1000, 1000)/100,
-                    speedY : rand(-1000, 1000)/100
+                    start_r : rand(100, 240),
+                    start_g : rand(100, 240),
+                    start_b : rand(100, 240)
+                    /*speedX : rand(-1000, 1000)/100,
+                    speedY : rand(-1000, 1000)/100*/
                 });
 
-                if(allSquares[allSquares.length-1].speedX==0 && allSquares[allSquares.length-1].speedY==0) {
+                /*if(allSquares[allSquares.length-1].speedX==0 && allSquares[allSquares.length-1].speedY==0) {
                     allSquares[allSquares.length-1].speedX = rand(-1000, 1000)/100;
-                }
+                }*/
             }
 
             lastTime = time;
@@ -41,26 +70,41 @@ $(document).ready(function() {
             ctx.fillRect(0,0, gameCanvas.width, gameCanvas.height);
 
             visibleSquares.length = 0;
-
             for(var i=0; i<allSquares.length; i++) {
                 var square = allSquares[i];
-                ctx.fillStyle = 'rgb('+square.r+','+square.g+','+square.b+')';
 
-                square.x = square.x + square.speedX;
-                square.y = square.y + square.speedY;
+                square.t += 1000/fps;
+                ctx.fillStyle = 'rgb('+square.start_r+','+square.start_g+','+square.start_b+')';
 
-                /*square.speedY += 0.1;
+                square.r = Easing.get(ease, 0, square.target_r, square.t, square.duration);
+                square.a = Easing.get(ease, square.start_a, square.start_a+180, square.t, square.duration);
+
+                //square.x + square.speedX;
+                //Easing.get(ease, square.start_x, square.target_x, square.t, square.duration);
+                square.x = Math.sin(Math.PI/180*square.a)*square.r + square.start_x;
+
+                //square.y + square.speedY;
+                //Easing.get(ease, square.start_y, square.target_y, square.t, square.duration);
+                square.y = Math.cos(Math.PI/180*square.a)*square.r + square.start_y;
+
+/*
+                square.speedY += 0.1;
                 square.r = Math.min(255, square.r+2);
                 square.g = Math.min(255, square.g+2);
-                square.b = Math.min(255, square.b+2);*/
+                square.b = Math.min(255, square.b+2);
+*/
 
                 ctx.fillRect(square.x-square.h/2, square.y-square.h/2, square.h, square.h);
 
-                if(square.x + square.h/2 > 0 && square.x - square.h/2 < gameCanvas.width
-                    && square.y + square.h/2 > 0 && square.y + square.h/2 < gameCanvas.height
-                    && (square.r != 255 || square.g !=255 || square.b !=255)) {
+                if(square.t < square.duration) {
                     visibleSquares.push(square);
                 }
+
+                /*if(square.x + square.h/2 > 0 && square.x - square.h/2 < gameCanvas.width
+                    && square.y + square.h/2 > 0 && square.y + square.h/2 < gameCanvas.height
+                    && (square.r != 255 || square.g !=255 || square.b !=255)) {
+
+                }*/
             }
             allSquares = visibleSquares.concat();
 
@@ -69,61 +113,6 @@ $(document).ready(function() {
     function rand(min, max) {
         return Math.floor(Math.random()*(max-min+1) + min);
     }
-
-
-
-
-
-   /* ctx.fillRect(0, 0, 100, 100);
-    ctx.strokeRect(100, 100, 40, 300);
-    ctx.clearRect(50, 50, 200, 200);
-
-    ctx.beginPath();
-    ctx.moveTo(30, 140);
-    ctx.lineTo(100, 140);
-    ctx.lineTo(50, 250);
-    ctx.lineTo(10, 150);
-    //ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
-
-
-    //var radian = Math.PI/180*45
-    ctx.beginPath();
-    ctx.arc(330, 100, 100, Math.PI/180*45, Math.PI/180*-120, false);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(200, 250);
-    ctx.bezierCurveTo(200, 100, 400, 400, 400, 250);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(30, 300);
-    ctx.lineTo(300, 320);
-    ctx.lineTo(400, 380);
-    ctx.bezierCurveTo(400, 500, 60, 500, 40, 300);
-
-
-    ctx.moveTo(150, 350);
-    ctx.lineTo(175, 400);
-    ctx.lineTo(200, 350);
-    ctx.lineTo(150, 350);
-
-    ctx.fill();
-
-    ctx.globalAlpha = 0.6;
-    ctx.lineJoin = 'round';
-    ctx.fillStyle = '#ff0000';
-    ctx.strokeRect(10, 10, 50, 50);
-
-    var gradient = ctx.createLinearGradient(11, 400, 110, 320);
-    gradient.addColorStop(0, '#dcf225');
-    gradient.addColorStop(0.32, '#0ce0ff');
-    gradient.addColorStop(1, '#ff4992');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(10, 300, 100, 100);
-*/
 
 });
 
