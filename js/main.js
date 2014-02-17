@@ -1,17 +1,5 @@
 $(document).ready(function () {
     var gameCanvas = document.createElement('canvas');
-    layoutCanvas();
-
-    window.addEventListener('click', animationLoop, false);
-    window.addEventListener('resize', layoutCanvas, false);
-    window.addEventListener('mousemove', onMouseMove, false);
-    window.addEventListener('touchstart', onMouseMove, false)
-    window.addEventListener('touchmove', onMouseMove, false)
-    window.addEventListener('touchendt', onMouseMove, false)
-
-    document.body.appendChild(gameCanvas);
-
-    var ctx = gameCanvas.getContext('2d');
     var fps = 60,
         lastTime = 0,
         ease = 'easeInOutQuart',
@@ -23,6 +11,28 @@ $(document).ready(function () {
         touches = [],
         allSquares = [],
         visibleSquares = [];
+
+    document.body.appendChild(gameCanvas);
+    var ctx = gameCanvas.getContext('2d');
+
+
+    layoutCanvas();
+
+    //window.addEventListener('click', animationLoop, false);
+    window.addEventListener('resize', layoutCanvas, false);
+
+    if(!Modernizr.touch) {
+        window.addEventListener('mousemove', onMouseMove, false);
+        touches.push({
+           pageX : Math.round(gameCanvas.width/2),
+           pageY : Math.round(gameCanvas.height/2)
+        });
+    } else {
+        window.addEventListener('touchstart', onMouseMove, false);
+        window.addEventListener('touchmove', onMouseMove, false);
+        window.addEventListener('touchendt', onMouseMove, false);
+    }
+
 
 
     animationLoop();
@@ -106,10 +116,15 @@ $(document).ready(function () {
     }
 
     function onMouseMove(event) {
-        source_x = event.x / gameCanvas.width;
-        source_y = event.y / gameCanvas.height;
+/*        source_x = event.x / gameCanvas.width;
+        source_y = event.y / gameCanvas.height;*/
 
-        touches = event.touches;
+        if(event.type=="mousemove") {
+            touches[0].pageX = event.x;
+            touches[0].pageY = event.y;
+        } else {
+            touches = event.touches;
+        }
 
         event.preventDefault();
         global_target_r = Math.max(0.1, global_target_r - 0.01);
